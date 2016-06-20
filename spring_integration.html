@@ -43,7 +43,7 @@
                             </p>
 
                             <ul class="nav nav-pills nav-stacked">
-                                                                    <li class="active">
+                                                                    <li class="">
                                         <a href="http://pnowy.github.io/NativeCriteria/index.html">
                                             General
                                         </a>
@@ -58,7 +58,7 @@
                                             Mappers
                                         </a>
                                     </li>
-                                                                    <li class="">
+                                                                    <li class="active">
                                         <a href="http://pnowy.github.io/NativeCriteria/spring_integration.html">
                                             Spring integration
                                         </a>
@@ -90,36 +90,37 @@
 
                 
                 <section class="col-sm-9 col-lg-10 content">
-                    <p><a href="https://travis-ci.org/pnowy/NativeCriteria"><img src="https://travis-ci.org/pnowy/NativeCriteria.svg?branch=develop" alt="Build Status" /></a>
-<a href="https://maven-badges.herokuapp.com/maven-central/com.github.pnowy.nc/nativeCriteria-core"><img src="https://maven-badges.herokuapp.com/maven-central/cz.jirutka.rsql/rsql-parser/badge.svg" alt="Maven Central" /></a></p>
-<h3 id="main-advantages--assumptions">Main advantages / assumptions:</h3>
-<ul>
-<li>simple, friendly API</li>
-<li>without any other generated classed based on database schema (no more fights with always problematics metamodels)</li>
-<li>possibility to build complex joins with detailed projections</li>
-<li>work on all databases supported by Hibernate</li>
-<li>designed for a select queries (not supported update queries now)</li>
-<li>separate module for spring integration (Spring Pageable abstraction support)</li>
-<li>set of mappers for simple result transformations</li>
-<li>support custom SQL query parts</li>
-<li>separate test module with examples build on top of JPA &amp; Spring Boot</li>
-</ul>
-<h3 id="library-available-on-maven-central-repository">Library available on Maven Central Repository</h3>
-<pre><code class="language-xml">&lt;!-- core module --&gt;
-&lt;dependency&gt;
-    &lt;groupId&gt;com.github.pnowy.nc&lt;/groupId&gt;
-    &lt;artifactId&gt;nativeCriteria-core&lt;/artifactId&gt;
-    &lt;version&gt;2.0&lt;/version&gt;
-&lt;/dependency&gt;
+                    <h2 id="spring-integration-module">SPRING Integration module</h2>
+<h3 id="nativebeanpropertymapper">NativeBeanPropertyMapper</h3>
+<pre><code class="language-java">
+public class Supplier {
+    // properties, getters and setters, etc.
+}
 
-&lt;!-- spring integration module --&gt;
-&lt;dependency&gt;
-    &lt;groupId&gt;com.github.pnowy.nc&lt;/groupId&gt;
-    &lt;artifactId&gt;nativeCriteria-spring&lt;/artifactId&gt;
-    &lt;version&gt;2.0&lt;/version&gt;
-&lt;/dependency&gt;</code></pre>
-<h3><a href="basic_usage.html">See basic usage examples!</a></h3>
-<h3><a href="https://github.com/pnowy/NativeCriteria/tree/develop/nativeCriteria-test">See working examples with Spring Boot on separate test module</a></h3>
+SpringNativeCriteria nc = new SpringNativeCriteria(new JpaQueryProvider(entityManager), "SUPPLIER", "s")
+    .setProjection(NativeExps.projection().addProjection(
+            "s.id as id",
+            "s.name as name",
+            "s.first_name as firstName",
+            "s.last_name as lastName",
+            "s.vat_identification_number as vat_identification_number"
+            "s.phone_number as phonenumber",
+            "s.email as email")
+    .setOrder(NativeExps.order().add("s.id", NativeOrderExp.OrderType.ASC));
+NativeBeanPropertyMapper&lt;SupplierDTO&gt; mapper = NativeBeanPropertyMapper.newInstance(SupplierDTO.class);
+List&lt;SupplierDTO&gt; results = nc.criteriaResult(mapper);</code></pre>
+<h3 id="pageable-support">Pageable support</h3>
+<pre><code class="language-java">SpringNativeCriteria nc = new SpringNativeCriteria(new JpaQueryProvider(entityManager), "SUPPLIER", "s")
+        .addJoin(NativeExps.innerJoin("ADDRESS", "a", "a.supplier_id", "s.id"));
+        .setProjection(NativeExps.projection().addProjectionWithAliases(
+            "s.id as id",
+            "a.city as city",
+            "s.name as name"
+        ));
+
+Page&lt;SupplierWithAddress&gt; suppliers = nc.criteriaResult("a.id", NativeBeanPropertyMapper.newInstance(SupplierWithAddress.class),
+                                                         new PageRequest(0, 2, new Sort(new Sort.Order(Sort.Direction.ASC, "s.id"))));
+List&lt;SupplierWithAddress&gt; pageContent = suppliers.getContent();</code></pre>
                 </section>
 
             </div>

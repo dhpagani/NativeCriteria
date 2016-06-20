@@ -43,12 +43,12 @@
                             </p>
 
                             <ul class="nav nav-pills nav-stacked">
-                                                                    <li class="active">
+                                                                    <li class="">
                                         <a href="http://pnowy.github.io/NativeCriteria/index.html">
                                             General
                                         </a>
                                     </li>
-                                                                    <li class="">
+                                                                    <li class="active">
                                         <a href="http://pnowy.github.io/NativeCriteria/basic_usage.html">
                                             Basic examples
                                         </a>
@@ -90,36 +90,40 @@
 
                 
                 <section class="col-sm-9 col-lg-10 content">
-                    <p><a href="https://travis-ci.org/pnowy/NativeCriteria"><img src="https://travis-ci.org/pnowy/NativeCriteria.svg?branch=develop" alt="Build Status" /></a>
-<a href="https://maven-badges.herokuapp.com/maven-central/com.github.pnowy.nc/nativeCriteria-core"><img src="https://maven-badges.herokuapp.com/maven-central/cz.jirutka.rsql/rsql-parser/badge.svg" alt="Maven Central" /></a></p>
-<h3 id="main-advantages--assumptions">Main advantages / assumptions:</h3>
-<ul>
-<li>simple, friendly API</li>
-<li>without any other generated classed based on database schema (no more fights with always problematics metamodels)</li>
-<li>possibility to build complex joins with detailed projections</li>
-<li>work on all databases supported by Hibernate</li>
-<li>designed for a select queries (not supported update queries now)</li>
-<li>separate module for spring integration (Spring Pageable abstraction support)</li>
-<li>set of mappers for simple result transformations</li>
-<li>support custom SQL query parts</li>
-<li>separate test module with examples build on top of JPA &amp; Spring Boot</li>
-</ul>
-<h3 id="library-available-on-maven-central-repository">Library available on Maven Central Repository</h3>
-<pre><code class="language-xml">&lt;!-- core module --&gt;
-&lt;dependency&gt;
-    &lt;groupId&gt;com.github.pnowy.nc&lt;/groupId&gt;
-    &lt;artifactId&gt;nativeCriteria-core&lt;/artifactId&gt;
-    &lt;version&gt;2.0&lt;/version&gt;
-&lt;/dependency&gt;
-
-&lt;!-- spring integration module --&gt;
-&lt;dependency&gt;
-    &lt;groupId&gt;com.github.pnowy.nc&lt;/groupId&gt;
-    &lt;artifactId&gt;nativeCriteria-spring&lt;/artifactId&gt;
-    &lt;version&gt;2.0&lt;/version&gt;
-&lt;/dependency&gt;</code></pre>
-<h3><a href="basic_usage.html">See basic usage examples!</a></h3>
-<h3><a href="https://github.com/pnowy/NativeCriteria/tree/develop/nativeCriteria-test">See working examples with Spring Boot on separate test module</a></h3>
+                    <h3 id="simple-select">Simple select:</h3>
+<pre><code class="language-java">// SELECT a.city FROM address a WHERE a.zip_code IS NULL ORDER BY a.city ASC
+NativeCriteria nc = new NativeCriteria(new JpaQueryProvider(entityManager), "address", "a")
+      .setProjection(NativeExps.projection().addProjection("a.city"))
+      .add(NativeExps.isNull("a.zip_code"));
+      .setOrder(NativeExps.order().add("a.city", OrderType.ASC));
+CriteriaResult res = c.criteriaResult();
+List&lt;String&gt; cityNames = new ArrayList&lt;&gt;();
+while (res.next()) {
+    resp.add(res.String("a.city"));
+}</code></pre>
+<h3 id="simple-select-with-inner-join">Simple select with inner join:</h3>
+<pre><code class="language-java">//SELECT s.id as supplierId, a.city as supplierCity FROM supplier s INNER JOIN address a ON s.id=a.supplier_id
+NativeCriteria c = new NativeCriteria(new JpaQueryProvider(entityManager), "supplier", "s")
+      .addJoin(NativeExps.innerJoin("address", "a", "s.id", "a.supplier_id"))
+      .setProjection(NativeExps.projection().addProjection("s.id as supplierId","a.city as supplierCity")));</code></pre>
+<h3 id="fetch-count">Fetch count:</h3>
+<pre><code class="language-java">//SELECT s.id as supplierId, a.city as supplierCity FROM supplier s INNER JOIN address a ON s.id=a.supplier_id
+NativeCriteria nc =  new NativeCriteria(new JpaQueryProvider(entityManager), "ADDRESS", "a").add(NativeExps.eq("a.city", "Warsaw"));
+int i = nc.fetchCount("a.city");</code></pre>
+<h3 id="select-top-rows-limitoffset-query-part">Select top rows (LIMIT/OFFSET query part):</h3>
+<pre><code class="language-java"> NativeCriteria nc = createNativeCriteria("ADDRESS", "a")
+        .setOrder(NativeExps.ascOrder("a.id"))
+        .setLimit(2)
+        .setOffset(1);
+List&lt;Address&gt; addresses = nc.criteriaResult(Address.NATIVE_OBJECT_MAPPER);</code></pre>
+<h3 id="custom-sql-query-part">Custom SQL query part:</h3>
+<pre><code class="language-java"> NativeCriteria nc = createSpringNativeCriteria("SUPPLIER", "s").addJoin(NativeExps.customSql("JOIN ADDRESS a ON a.supplier_id=s.id"));
+ CriteriaResult result = nc.criteriaResult();
+ while (result.next()) {
+    String currentRecordDesc = result.getCurrentRecordDesc();
+    log.info(currentRecordDesc);
+}</code></pre>
+<p><a href="mappers.html">See the mappers for convinient retrieving the data</a></p>
                 </section>
 
             </div>

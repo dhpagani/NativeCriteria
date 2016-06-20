@@ -43,7 +43,7 @@
                             </p>
 
                             <ul class="nav nav-pills nav-stacked">
-                                                                    <li class="active">
+                                                                    <li class="">
                                         <a href="http://pnowy.github.io/NativeCriteria/index.html">
                                             General
                                         </a>
@@ -68,7 +68,7 @@
                                             Release notes
                                         </a>
                                     </li>
-                                                                    <li class="">
+                                                                    <li class="active">
                                         <a href="http://pnowy.github.io/NativeCriteria/logging.html">
                                             Logging
                                         </a>
@@ -90,36 +90,13 @@
 
                 
                 <section class="col-sm-9 col-lg-10 content">
-                    <p><a href="https://travis-ci.org/pnowy/NativeCriteria"><img src="https://travis-ci.org/pnowy/NativeCriteria.svg?branch=develop" alt="Build Status" /></a>
-<a href="https://maven-badges.herokuapp.com/maven-central/com.github.pnowy.nc/nativeCriteria-core"><img src="https://maven-badges.herokuapp.com/maven-central/cz.jirutka.rsql/rsql-parser/badge.svg" alt="Maven Central" /></a></p>
-<h3 id="main-advantages--assumptions">Main advantages / assumptions:</h3>
-<ul>
-<li>simple, friendly API</li>
-<li>without any other generated classed based on database schema (no more fights with always problematics metamodels)</li>
-<li>possibility to build complex joins with detailed projections</li>
-<li>work on all databases supported by Hibernate</li>
-<li>designed for a select queries (not supported update queries now)</li>
-<li>separate module for spring integration (Spring Pageable abstraction support)</li>
-<li>set of mappers for simple result transformations</li>
-<li>support custom SQL query parts</li>
-<li>separate test module with examples build on top of JPA &amp; Spring Boot</li>
-</ul>
-<h3 id="library-available-on-maven-central-repository">Library available on Maven Central Repository</h3>
-<pre><code class="language-xml">&lt;!-- core module --&gt;
-&lt;dependency&gt;
-    &lt;groupId&gt;com.github.pnowy.nc&lt;/groupId&gt;
-    &lt;artifactId&gt;nativeCriteria-core&lt;/artifactId&gt;
-    &lt;version&gt;2.0&lt;/version&gt;
-&lt;/dependency&gt;
-
-&lt;!-- spring integration module --&gt;
-&lt;dependency&gt;
-    &lt;groupId&gt;com.github.pnowy.nc&lt;/groupId&gt;
-    &lt;artifactId&gt;nativeCriteria-spring&lt;/artifactId&gt;
-    &lt;version&gt;2.0&lt;/version&gt;
-&lt;/dependency&gt;</code></pre>
-<h3><a href="basic_usage.html">See basic usage examples!</a></h3>
-<h3><a href="https://github.com/pnowy/NativeCriteria/tree/develop/nativeCriteria-test">See working examples with Spring Boot on separate test module</a></h3>
+                    <h3 id="logger-to-log-execution-sql-time-available-on-debug-level">Logger to log execution sql time (available on DEBUG level):</h3>
+<p>You could always enable by (the root appender will be used):</p>
+<pre><code class="language-xml">&lt;logger name="NativeCriteriaPerformance" level="DEBUG" /&gt;</code></pre>
+<p>If you want add additional log output (system log or separate file) configure the appender too:</p>
+<pre><code class="language-xml">&lt;logger name="NativeCriteriaPerformance" level="DEBUG"&gt;
+   &lt;appender-ref ref="stdout" /&gt;
+&lt;/logger&gt;</code></pre>
                 </section>
 
             </div>

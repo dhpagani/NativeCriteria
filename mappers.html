@@ -43,7 +43,7 @@
                             </p>
 
                             <ul class="nav nav-pills nav-stacked">
-                                                                    <li class="active">
+                                                                    <li class="">
                                         <a href="http://pnowy.github.io/NativeCriteria/index.html">
                                             General
                                         </a>
@@ -53,7 +53,7 @@
                                             Basic examples
                                         </a>
                                     </li>
-                                                                    <li class="">
+                                                                    <li class="active">
                                         <a href="http://pnowy.github.io/NativeCriteria/mappers.html">
                                             Mappers
                                         </a>
@@ -90,36 +90,40 @@
 
                 
                 <section class="col-sm-9 col-lg-10 content">
-                    <p><a href="https://travis-ci.org/pnowy/NativeCriteria"><img src="https://travis-ci.org/pnowy/NativeCriteria.svg?branch=develop" alt="Build Status" /></a>
-<a href="https://maven-badges.herokuapp.com/maven-central/com.github.pnowy.nc/nativeCriteria-core"><img src="https://maven-badges.herokuapp.com/maven-central/cz.jirutka.rsql/rsql-parser/badge.svg" alt="Maven Central" /></a></p>
-<h3 id="main-advantages--assumptions">Main advantages / assumptions:</h3>
-<ul>
-<li>simple, friendly API</li>
-<li>without any other generated classed based on database schema (no more fights with always problematics metamodels)</li>
-<li>possibility to build complex joins with detailed projections</li>
-<li>work on all databases supported by Hibernate</li>
-<li>designed for a select queries (not supported update queries now)</li>
-<li>separate module for spring integration (Spring Pageable abstraction support)</li>
-<li>set of mappers for simple result transformations</li>
-<li>support custom SQL query parts</li>
-<li>separate test module with examples build on top of JPA &amp; Spring Boot</li>
-</ul>
-<h3 id="library-available-on-maven-central-repository">Library available on Maven Central Repository</h3>
-<pre><code class="language-xml">&lt;!-- core module --&gt;
-&lt;dependency&gt;
-    &lt;groupId&gt;com.github.pnowy.nc&lt;/groupId&gt;
-    &lt;artifactId&gt;nativeCriteria-core&lt;/artifactId&gt;
-    &lt;version&gt;2.0&lt;/version&gt;
-&lt;/dependency&gt;
-
-&lt;!-- spring integration module --&gt;
-&lt;dependency&gt;
-    &lt;groupId&gt;com.github.pnowy.nc&lt;/groupId&gt;
-    &lt;artifactId&gt;nativeCriteria-spring&lt;/artifactId&gt;
-    &lt;version&gt;2.0&lt;/version&gt;
-&lt;/dependency&gt;</code></pre>
-<h3><a href="basic_usage.html">See basic usage examples!</a></h3>
-<h3><a href="https://github.com/pnowy/NativeCriteria/tree/develop/nativeCriteria-test">See working examples with Spring Boot on separate test module</a></h3>
+                    <h3 id="get-result-as-object-list-by-nativeobjectmapper">Get result as object list by NativeObjectMapper</h3>
+<pre><code class="language-java">//SELECT a.* FROM address
+NativeCriteria nc = new NativeCriteria(new HibernateQueryProvider(hibernateSession), "ADDRESS", "a")
+                        .add(NativeExps.eq("a.city", "WARSAW"));
+List&lt;Address&gt; res = nc.criteriaResult(new NativeObjectMapper&lt;Address&gt;() {
+    @Override
+    public Address mapObject(CriteriaResult cr) {
+        Address a = new Address();
+        a.setId(cr.getLong(0));
+        a.setCity(cr.getString(1));
+        a.setStreet(cr.getString(2));
+        a.setBuildingNumber(cr.getString(3));
+        a.setZipCode(cr.getString(4));
+        return a;
+    }
+});
+</code></pre>
+<p>You could always define the mapper as separate object:</p>
+<pre><code class="language-java">NativeCriteria nc = createNativeCriteria("ADDRESS", "a").add(NativeExps.eq("a.city", "Warsaw"));
+List&lt;Address&gt; res = nc.criteriaResult(Address.NATIVE_OBJECT_MAPPER);</code></pre>
+<h3 id="get-any-result-by-criteriaresulttransformer">Get any result by CriteriaResultTransformer</h3>
+<pre><code class="language-java">NativeCriteria nc = new NativeCriteria(new HibernateQueryProvider(hibernateSession), "ADDRESS", "a");
+Multimap&lt;String, String&gt; zipCodesGroupedByCities = nc.criteriaResult(new CriteriaResultTransformer&lt;Multimap&lt;String,String&gt;&gt;() {
+    @Override
+    public Multimap&lt;String, String&gt; transform(CriteriaResult criteriaResult) {
+        Multimap&lt;String, String&gt; result = HashMultimap.create();
+        while (criteriaResult.next()) {
+            // 1 - city code, 4 - zip code
+            result.put(criteriaResult.getString(1), criteriaResult.getString(4));
+        }
+        return result;
+    }
+});</code></pre>
+<p><a href="spring_integration.html">See more mappers on Spring module</a></p>
                 </section>
 
             </div>
